@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+</head>
+<body>
+<h2>ILMAJAAM</h2>
+<div id="buttons">
+	<button type="button" onclick="loadData(url_1)">EST jaam</button>
+	<button type="button" onclick="loadData(url_2)">ENG jaam</button>
+</div>
+<table id="demo">Laen...</table>
+<script>
+// Teenuste aadressid!!!
+var url_1 = "http://www.ilmateenistus.ee/ilma_andmed/xml/observations.php";
+var url_2 =  "http://api.apixu.com/v1/current.xml?key=77c71063acca49f5855160725170502&q="
+// Mudel kuhu tulevad andmed JSON
+var myCityes = [];
+var myCityesJSON = "";
+
+/* Andmed APIUX linnad & andmed ilmajaama jaoks!
+---APIUX vajab andmeid ilma täpitähteteta.
++++ILMAJAAM:EE andmeid peab pärima koos wmocod-iga kuna seal on osasid linnasid topelt ja jaama nimed linna nimedest erinevad.
++++wmocode oleks siis nn. ID-ks!
+*/
+
+var citys_UX = ["Tallinn", "Tartu", "Parnu", "Narva", "Johvi"];
+var citys_EST = [
+	["Tallinn-Harku", "26038"],
+	["Tartu-Tõravere", "26242"],
+	["Jõgeva", "26144"],
+	["Narva", "26058"],
+	["Viljandi", "26233"]
+	];
+
+// Võrdleme valikuid millisest andmebaasist soovime andmeid
+function loadData(y){
+var y, i;
+	if(y === url_2){
+		for(i = 0; i< citys_UX.length; i++){
+			city = y + citys_UX[i];
+			loadXMLDoc(city);
+		};
+	}
+	else{
+		loadXMLDoc(y);
+	}
+};
+// Laeme andmed XMList
+function loadXMLDoc(x) {
+  var urlX = x;
+  var xmlhttp = new XMLHttpRequest();
+  xmlhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+		if (x == url_1){
+			ESTstation(this);
+		}
+		else{document.getElementById("demo").innerHTML = this.responseText;}
+    }
+	else{
+	  document.getElementById("demo").innerHTML = "<bold>Error!!!!</bold>";
+	}
+  };
+  xmlhttp.open("GET", urlX, true);
+  xmlhttp.send();
+}
+//EST XML
+function ESTstation(xml) {
+  var i,j;
+  var xmlDoc = xml.responseXML;
+  var table="<tr><th>Nimi</th><th>Tempe</th><th>Tuulekiirus</th><th>Tuulekiirus Max</th><th>Pilvisus</th><th>Tuule suund</th></tr>";
+  var x = xmlDoc.getElementsByTagName("station");
+  for (i = 0; i <x.length; i++) { 
+	j = 0;
+	for(j = 0; j < citys_EST.length; j++){
+	   if (citys_EST[j][0] == x[i].getElementsByTagName("name")[0].childNodes[0].nodeValue && citys_EST[j][1] == x[i].getElementsByTagName("wmocode")[0].childNodes[0].nodeValue){
+		table += "<tr><td>" +
+		x[i].getElementsByTagName("name")[0].childNodes[0].nodeValue +
+		"</td><td>" +
+		x[i].getElementsByTagName("airtemperature")[0].childNodes[0].nodeValue +
+		"</td><td>" +
+		x[i].getElementsByTagName("windspeed")[0].childNodes[0].nodeValue +
+		"</td><td>" +
+		x[i].getElementsByTagName("windspeedmax")[0].childNodes[0].nodeValue +
+		"</td><td>"+
+		 "Snow"  +
+		"</td><td>"+
+		x[i].getElementsByTagName("winddirection")[0].childNodes[0].nodeValue +
+		"</td></tr>"
+		;
+		}
+	}
+  }
+  document.getElementById("demo").innerHTML = table;
+}
+//funktsioon ENG XML
+//Case ikoonide jaoks
+//konstruktor mis siis peaks andmetest genereerima HTML
+</script>
+
+</body>
+</html>
